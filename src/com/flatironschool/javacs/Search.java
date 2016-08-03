@@ -10,21 +10,27 @@ public class Search{
 		try {
 			//gets the arguments that are passed by the user
 			Cli cli = parseArguments(Cli.class, args);
-			
+
 			//creates a jedis object
 			Jedis jedis = JedisMaker.make();
 			JedisIndex index = new JedisIndex(jedis);
-	
+
 			//Does the search and prints the results
 			String term1 = cli.getTerm();
 			System.out.println("Query: " + term1);
+
+			String filter = cli.getFilter();
+
+			if (filter.equals("and")) {
+				System.out.println("AND");
+			}
+
 			WikiSearch search1 = WikiSearch.search(term1, index);
 			search1.print();
 
 		} catch(ArgumentValidationException e){
-			System.err.println(e.getMessage());	
+			System.err.println(e.getMessage());
 		}
 
 	}
 }
-
