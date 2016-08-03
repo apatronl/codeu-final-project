@@ -16,17 +16,24 @@ public class Search{
 			JedisIndex index = new JedisIndex(jedis);
 
 			//Does the search and prints the results
-			String term1 = cli.getTerm();
-			System.out.println("Query: " + term1);
+			String terms = cli.getTerm();
+			System.out.println("Query: " + terms);
 
+			String[] termsArr = terms.split(",");
+			System.out.println(termsArr[0] + " " + termsArr[1]);
+
+			//Get filter (and, or, minus)
 			String filter = cli.getFilter();
+
+			WikiSearch search1 = WikiSearch.search(termsArr[0], index);
+			WikiSearch search2 = WikiSearch.search(termsArr[1], index);
+		//	search1.print();
 
 			if (filter.equals("and")) {
 				System.out.println("AND");
+				WikiSearch and = search1.and(search2);
+				and.print();
 			}
-
-			WikiSearch search1 = WikiSearch.search(term1, index);
-			search1.print();
 
 		} catch(ArgumentValidationException e){
 			System.err.println(e.getMessage());

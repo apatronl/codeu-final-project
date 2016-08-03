@@ -9,5 +9,7 @@ public interface Cli {
 	*/
 	@Option
 	String getTerm();
+	
+	@Option
 	String getFilter();
 }
