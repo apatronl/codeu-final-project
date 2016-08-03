@@ -1,3 +1,5 @@
+package com.flatironschool.javacs;
+
 import static com.lexicalscope.jewel.cli.CliFactory.parseArguments;
 import com.lexicalscope.jewel.cli.ArgumentValidationException;
 

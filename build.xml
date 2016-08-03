@@ -452,12 +452,29 @@
         </junit>
     </target>
 
-    <target name="SimpleExample">
-	<java classname="com.flatironschool.javacs.SimpleExample" failonerror="true" fork="yes">
+    <target name="Person">
+	<java classname="com.flatironschool.javacs.Person" failonerror="true" fork="yes">
                <classpath refid="JavaCS.classpath"/>
 	</java>
     </target>
-    <target name="TestSimpleExample">
+    <target name="Hello">
+        <java classname="com.flatironschool.javacs.Hello" failonerror="true" fork="yes">
+               <classpath refid="JavaCS.classpath"/>
+        </java>
+    </target>
+    <target name="Cli">
+        <java classname="com.flatironschool.javacs.Cli" failonerror="true" fork="yes">
+               <classpath refid="JavaCS.classpath"/>
+        </java>
+    </target>
+    <target name="Search">
+        <java classname="com.flatironschool.javacs.Search" failonerror="true" fork="yes">
+               <classpath refid="JavaCS.classpath"/>
+       	       <arg value="${arg0}"/>
+	 </java>
+    </target>
+
+<!--   <target name="TestSimpleExample">
         <mkdir dir="${junit.output.dir}"/>
         <junit fork="yes" printsummary="withOutAndErr">
             <formatter type="xml"/>
@@ -465,7 +482,7 @@
             <classpath refid="JavaCS.classpath"/>
         </junit>
     </target>
-	       	
+-->	       	
     <target name="junitreport">
         <junitreport todir="${junit.output.dir}">
             <fileset dir="${junit.output.dir}">
