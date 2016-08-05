@@ -5,7 +5,7 @@ import com.lexicalscope.jewel.cli.ArgumentValidationException;
 
 import redis.clients.jedis.Jedis;
 
-public class Search{
+public class Search {
 	public static void main(String [] args) throws IOException{
 		try {
 			//gets the arguments that are passed by the user
@@ -19,8 +19,10 @@ public class Search{
 			String terms = cli.getTerm();
 			System.out.println("Query: " + terms);
 
-			String[] termsArr = terms.split(",");
-			System.out.println(termsArr[0] + " " + termsArr[1]);
+			// String[] termsArr = terms.split(",");
+			// System.out.println(termsArr[0] + " " + termsArr[1]);
+			String[] termsArr = Parser.parseTerms(terms);
+			System.out.println(termsArr[0]);
 
 			//Get filter (and, or, minus)
 			String filter = cli.getFilter();
