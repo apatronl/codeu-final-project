@@ -464,7 +464,19 @@
                <arg value="${arg1}"/>
 	 </java>
     </target>
+  
+    <target name="UrlCounter">
+	<java classname="com.flatironschool.javacs.UrlCounter" failonerror="true" fork="yes">
+		<classpath refid="JavaCS.classpath"/>
+        </java>
+    </target>
 
+
+   <target name="JedisUrlIndex">
+	<java classname="com.flatironschool.javacs.JedisUrlIndex" failonerror="true" fork="yes">
+	         <classpath refid="JavaCS.classpath"/>
+	</java>
+   </target>
     <target name="junitreport">
         <junitreport todir="${junit.output.dir}">
             <fileset dir="${junit.output.dir}">
