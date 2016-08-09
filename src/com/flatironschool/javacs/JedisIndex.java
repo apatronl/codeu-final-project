@@ -16,11 +16,24 @@ import redis.clients.jedis.Transaction;
 
 /**
  * Represents a Redis-backed web search index.
- * 
+ * IDF(t) = log_e(Total number of documents / Number of documents with term t in it).
+ *    -use getPagesIndexed() to get total number of documents
+ *    -use getTermURLCount(term) to get # of documents with the term in it
+ * we don't actually push the termCounter to redis...just the info from the termCounter
+ *    -create a hashmap containing all the termcounters? the label of each termCounter is its URL
+ *	  -TF(t) = (Number of times term t appears in a document) / (Total number of terms in the document).
+ *    -from each termcounter...getTfValue(term)
+ *    -getTermCounter
+ * wiki search puts all the values together to get relevance score
  */
 public class JedisIndex {
 
 	private Jedis jedis;
+	private int pagesIndexed = 0; //the total number of documents
+	private ArrayList<String> termCounterIDs = new ArrayList<String>();
+	private Map<String, TermCounter> termCounters = new HashMap<String, TermCounter>();
+		//hashmap of urls to termcounters
+
 
 	/**
 	 * Constructor.
@@ -30,7 +43,39 @@ public class JedisIndex {
 	public JedisIndex(Jedis jedis) {
 		this.jedis = jedis;
 	}
+
+	/**
+	*
+	*input: String URL
+	*output: TermCounter associated with URL
+	*
+	**/
+
+	public TermCounter getTermCounter(String url){
+		return termCounters.get(url);
+	}
 	
+	/**
+	*
+	*returns the number of pages that have been indexed
+	*
+	**/
+
+	public int getPagesIndexed(){
+		return pagesIndexed;
+	}
+	
+	/**
+	*returns the number of URLS that contain the inputted term
+	*
+	**/
+	public int getTermURLCount(String term){
+		//Set<String> set
+		Set<String> termURLs = getURLs(term);
+		return termURLs.size();
+
+	}
+
 	/**
 	 * Returns the Redis key for a given search term.
 	 * 
@@ -39,14 +84,20 @@ public class JedisIndex {
 	private String urlSetKey(String term) {
 		return "URLSet:" + term;
 	}
-	
+
+
 	/**
 	 * Returns the Redis key for a URL's TermCounter.
 	 * 
 	 * @return Redis key.
 	 */
 	private String termCounterKey(String url) {
-		return "TermCounter:" + url;
+		String termCounterID = "TermCounter:" + url;
+		if(termCounterIDs.contains(termCounterID) == false){ //if this is a new termCounterKey
+			termCounterIDs.add(termCounterID); //add it to the the list
+			pagesIndexed++; //increase the pagesIndexed count by 1. (there is 1 term counter for each page)
+		}
+		return termCounterID;
 	}
 
 	/**
@@ -72,6 +123,7 @@ public class JedisIndex {
 
 	/**
 	 * Looks up a search term and returns a set of URLs.
+	 * Number of documents with term t in it
 	 * 
 	 * @param term
 	 * @return Set of URLs.
@@ -121,7 +173,6 @@ public class JedisIndex {
 		Map<String, Integer> map = new HashMap<String, Integer>();
 		int i = 0;
 		for (String url: urls) {
-			System.out.println(url);
 			Integer count = new Integer((String) res.get(i++));
 			map.put(url, count);
 		}
@@ -148,14 +199,18 @@ public class JedisIndex {
 	 * @param paragraphs  Collection of elements that should be indexed.
 	 */
 	public void indexPage(String url, Elements paragraphs) {
-		System.out.println("Indexing " + url);
 		
 		// make a TermCounter and count the terms in the paragraphs
 		TermCounter tc = new TermCounter(url);
 		tc.processElements(paragraphs);
+
+		//add TermCounter to our hashmap.
+		termCounters.put(url, tc);		
+
+		String hashname = termCounterKey(url);
 		
 		// push the contents of the TermCounter to Redis
-		pushTermCounterToRedis(tc);
+		pushTermCounterToRedis(tc, hashname);
 	}
 
 	/**
@@ -164,14 +219,18 @@ public class JedisIndex {
 	 * @param tc
 	 * @return List of return values from Redis.
 	 */
-	public List<Object> pushTermCounterToRedis(TermCounter tc) {
+	public List<Object> pushTermCounterToRedis(TermCounter tc, String hashname) {
 		Transaction t = jedis.multi();
 		
 		String url = tc.getLabel();
-		String hashname = termCounterKey(url);
 		
 		// if this page has already been indexed; delete the old hash
+		//since it's a transaction we can't use an if statement - will get an error
+		//how do we keep track of the total number of indexed pages
+
+		//check if hashname exists already?
 		t.del(hashname);
+
 
 		// for each term, add an entry in the termcounter and a new
 		// member of the index
@@ -260,6 +319,7 @@ public class JedisIndex {
 			t.del(key);
 		}
 		t.exec();
+		pagesIndexed = 0;
 	}
 
 	/**
@@ -292,6 +352,7 @@ public class JedisIndex {
 			t.del(key);
 		}
 		t.exec();
+
 	}
 
 	/**

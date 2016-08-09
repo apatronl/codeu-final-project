@@ -4,6 +4,9 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.lang.Float;
+import java.lang.Integer;
+import java.lang.Math;
 
 import org.jsoup.nodes.Node;
 import org.jsoup.nodes.TextNode;
@@ -12,7 +15,9 @@ import org.jsoup.select.Elements;
 
 /**
  * Encapsulates a map from search term to frequency (count).
- * 
+ * total number of times the term appears in the document, total terms in the doc
+ * TF(t) = (Number of times term t appears in a document) / (Total number of terms in the document).
+ *
  * @author downey
  *
  */
@@ -26,12 +31,31 @@ public class TermCounter {
 		this.map = new HashMap<String, Integer>();
 	}
 	
+	/*
+	*
+	*returns URL associated with the TermCounter
+	*/
 	public String getLabel() {
 		return label;
+	}
+
+	/**
+	*returns the tf value of the specified terms
+	*
+	*input: term you want to get the tf value for
+	*output: tf value of terms
+	*/
+	public double getTfValue(String term){
+		double tf = 0.0;
+		int termCount = get(term); //# of times the term appears in the document
+		double totalCount = size(); //total # of terms in the document
+		tf = (termCount)/(totalCount); //totalCount should not be 0
+		return tf;
 	}
 	
 	/**
 	 * Returns the total of all counts.
+	 * total number of terms in documents
 	 * 
 	 * @return
 	 */
@@ -82,6 +106,20 @@ public class TermCounter {
 			String term = array[i];
 			incrementTermCount(term);
 		}
+		int totalTerms = map.size();
+		
+		/**
+		*may not be necessary to calculate tf for each term...just calculate it on a need basis
+		*"when called"
+		*calculate tf for each term
+		*for(Map.Entry<String, Integer> entry : map.entrySet()){
+		*	String term = entry.getKey();
+		*	Integer value = entry.getValue();
+		*	Float tfValue = value/(float)totalTerms;
+		*	tf.put(term, tfValue);
+		*}
+		**/
+
 	}
 
 	/**
