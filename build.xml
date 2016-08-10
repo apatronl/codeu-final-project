@@ -461,7 +461,6 @@
         <java classname="com.flatironschool.javacs.Search" failonerror="true" fork="yes">
                <classpath refid="JavaCS.classpath"/>
        	       <arg value="${arg0}"/>
-               <arg value="${arg1}"/>
 	 </java>
     </target>
   

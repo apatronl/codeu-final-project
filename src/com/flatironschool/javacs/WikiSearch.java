@@ -49,7 +49,9 @@ public class WikiSearch {
 	public void print() {
 		List<Entry<String, Integer>> entries = sort();
 		for (Entry<String, Integer> entry: entries) {
-			System.out.println(entry);
+			if(entry.getValue() != null)		
+				System.out.println(entry);
+			
 		}
 	}
 	
@@ -146,7 +148,7 @@ public class WikiSearch {
 	 * @return
 	 */
 	public static WikiSearch search(String term, JedisIndex index) {
-		Map<String, Integer> map = index.getCounts(term);
+		Map<String, Integer> map = index.getCountsFaster(term);
 		return new WikiSearch(map);
 	}
 

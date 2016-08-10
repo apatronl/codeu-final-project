@@ -14,29 +14,31 @@ public class Search {
 			//creates a jedis object
 			Jedis jedis = JedisMaker.make();
 			JedisIndex index = new JedisIndex(jedis);
-
+			JedisIndex.loadIndex(index);
 			//Does the search and prints the results
-			String terms = cli.getTerm();
-			System.out.println("Query: " + terms);
-
-			// String[] termsArr = terms.split(",");
-			// System.out.println(termsArr[0] + " " + termsArr[1]);
+			String terms = cli.getTerms().toLowerCase();
+			System.out.println("Searching.....");
 			String[] termsArr = Parser.parseTerms(terms);
-			System.out.println(termsArr[0]);
-
-			//Get filter (and, or, minus)
-			String filter = cli.getFilter();
-
+			
 			WikiSearch search1 = WikiSearch.search(termsArr[0], index);
-			WikiSearch search2 = WikiSearch.search(termsArr[1], index);
-		//	search1.print();
-
-			if (filter.equals("and")) {
-				System.out.println("AND");
-				WikiSearch and = search1.and(search2);
-				and.print();
+			WikiSearch search2 = null;
+			for(int i = 1; i < termsArr.length; i++){
+				if(termsArr[i].equals("and")){
+					search2 = WikiSearch.search(termsArr[i + 1], index);
+					search1 = search1.and(search2);
+					i++;
+				}
+				else if(termsArr[i].equals("-")){
+					search2 = WikiSearch.search(termsArr[i + 1], index);
+					search1 = search1.minus(search2);
+					i++;
+				}
+				else{
+					search2 = WikiSearch.search(termsArr[i], index);
+					search1 = search1.or(search2);
+				}
 			}
-
+			search1.print();
 		} catch(ArgumentValidationException e){
 			System.err.println(e.getMessage());
 		}

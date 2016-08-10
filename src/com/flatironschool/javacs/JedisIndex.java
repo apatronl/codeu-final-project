@@ -148,7 +148,6 @@ public class JedisIndex {
 	 * @param paragraphs  Collection of elements that should be indexed.
 	 */
 	public void indexPage(String url, Elements paragraphs) {
-		System.out.println("Indexing " + url);
 		
 		// make a TermCounter and count the terms in the paragraphs
 		TermCounter tc = new TermCounter(url);
@@ -307,10 +306,6 @@ public class JedisIndex {
 		//index.deleteAllKeys();
 		loadIndex(index);
 		
-		Map<String, Integer> map = index.getCountsFaster("the");
-		for (Entry<String, Integer> entry: map.entrySet()) {
-			System.out.println(entry);
-		}
 	}
 
 	/**
@@ -319,15 +314,17 @@ public class JedisIndex {
 	 * @return
 	 * @throws IOException
 	 */
-	private static void loadIndex(JedisIndex index) throws IOException {
+	public static void loadIndex(JedisIndex index) throws IOException {
 		WikiFetcher wf = new WikiFetcher();
 
 		String url = "https://en.wikipedia.org/wiki/Java_(programming_language)";
-		Elements paragraphs = wf.readWikipedia(url);
-		index.indexPage(url, paragraphs);
-		
-		url = "https://en.wikipedia.org/wiki/Programming_language";
-		paragraphs = wf.readWikipedia(url);
-		index.indexPage(url, paragraphs);
+		WikiCrawler wc = new WikiCrawler(url, index);
+		Elements paragraphs = wf.fetchWikipedia(url);
+		wc.queueInternalLinks(paragraphs);
+		String res;
+		for(int i = 0; i < 20; i++)
+			res = wc.crawl(false);	
+				
 	}
+
 }
